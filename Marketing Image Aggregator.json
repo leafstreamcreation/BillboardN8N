@@ -1,0 +1,305 @@
+{
+  "name": "Marketing Image Aggregator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "dca23cf9-2b10-4da9-abf8-a201aa029b3e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "2c9c3141-8c5a-4bf2-9321-e875285fd521",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "vzmoQjzGMXE46rw1",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate exactly 2 topics for each of the following subjects:  \n1. **Full Stack Web Development**  \n2. **Artificial Intelligence (AI)**  \n3. **Data Science**  \n4. **Cybersecurity**  \n5. **DevOps**  \n\n**Requirements for each topic**:  \n- Must be **either trending in 2025 or a foundational concept** critical for mastering the subject.  \n- Topics should reflect **real-world applications, emerging technologies, or paradigm shifts** cited in industry reports.\nExclude the subject titles from your response - respond only with the raw list of topics",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "f54e7ac9-f1a5-4195-a428-8d99ddc9cb49",
+      "name": "Topic Generator"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "[\"topic1\", \"topic2\", \"topic3\"]"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        208
+      ],
+      "id": "e7a9fef8-aae5-4fcb-9dbf-b82832309fd5",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        560,
+        0
+      ],
+      "id": "f95b7d7b-ffda-4893-843c-4bad94b58187",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        1280,
+        304
+      ],
+      "id": "dc44deaf-bd3b-4015-8013-0f1fec3b1b9e",
+      "name": "DeepSeek Chat Model1",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "vzmoQjzGMXE46rw1",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n        \"type\": {\n          \"type\": \"string\"\n        },\n\t\t\"width\": {\n\t\t\t\"type\": \"number\"\n\t\t},\n       \"height\": {\n         \"type\": \"number\"\n       },\n\t\t\"prompt\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t}\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1536,
+        304
+      ],
+      "id": "42ebdcd2-d679-4d58-a9c4-f4afe3194bbb",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst metaphors = [\n  \"floating geometric mesh\",\n  \"neural network grid\",\n  \"cybernetic circuit landscape\",\n  \"quantum particle field\", \n  \"security shield matrix\"\n]\n\nfor (const item of $input.all()) {\n  const index = Math.floor(Math.random() * metaphors.length);\n  item.json.metaphor = metaphors[index];\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        64
+      ],
+      "id": "aa8fcfe2-76e7-4d47-a82a-34b47f60c104",
+      "name": "Create Image metaphor"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        768,
+        0
+      ],
+      "id": "af9ffc36-1a6c-4186-b797-2abe0c226d14",
+      "name": "Loop Over Topics"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Professional digital illustration of {{ $json['output'] }} concept. Sleek modern tech style, vibrant but professional color palette with electric blues, quantum purples, and holographic accents. Composition features:\n\n1. **Core Metaphor**: {{ $json['metaphor'] }}\n\n2. **Key Elements**:\n   - Abstract representations of {{ $json['output'] }} components as glowing 3D structures\n   - Dynamic light trails showing data flow/connections\n   - Transparent layers suggesting architectural depth\n   - Subtle binary code or microchip patterns in background\n\n3. **Style Guide**:\n   - Photorealistic materials with glass/metal textures\n   - Isometric perspective or futuristic fisheye view\n   - Cinematic lighting with volumetric rays\n   - Cyberpunk aesthetic meets corporate minimalism\n   - Negative space for text overlay\n\n4. **Exclusions**: No text, no human figures\nRespond with the prompt only as part of a JSON object with the format: { type: string, width: number, height: number, prompt: string }",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1392,
+        96
+      ],
+      "id": "b4c4305e-f18e-4b1a-9930-dfd9257a5ad0",
+      "name": "Generate Image prompt"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first().json;\nconst prompt = item.output.prompt;\n$input.first().json.output = [  { type: 'banner', width: 1200, height: 630, prompt },  { type: 'card', width: 800, height: 600, prompt },  { type: 'splash', width: 1200, height: 800, prompt },  { type: 'background', width: 1920, height: 1080, prompt }];\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1792,
+        96
+      ],
+      "id": "2a53bf27-cfd4-4a19-9dc6-94dd4e2c8a7a",
+      "name": "Define Image Formats"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Topic Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Topic Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Topic Generator": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Topic Generator",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Image prompt",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Image prompt",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Image metaphor": {
+      "main": [
+        [
+          {
+            "node": "Generate Image prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Topics": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Create Image metaphor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image prompt": {
+      "main": [
+        [
+          {
+            "node": "Define Image Formats",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Define Image Formats": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "b233ae6f-3a65-4f4f-97c4-c1a31e0ea748",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a772c2a5e6d2026c3989736fcda24214848f5b90f89411ac194072e994cab1a9"
+  },
+  "id": "TLSwNOTiOK3Iksdy",
+  "tags": []
+}
