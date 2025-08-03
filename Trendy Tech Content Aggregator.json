@@ -1,0 +1,672 @@
+{
+  "name": "Trendy Tech Content Aggregator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 2
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "dca23cf9-2b10-4da9-abf8-a201aa029b3e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "2c9c3141-8c5a-4bf2-9321-e875285fd521",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "vzmoQjzGMXE46rw1",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate exactly 2 topics for each of the following subjects:  \n1. **Full Stack Web Development**  \n2. **Artificial Intelligence (AI)**  \n3. **Data Science**  \n4. **Cybersecurity**  \n5. **DevOps**  \n\n**Requirements for each topic**:  \n- Must be **either trending in 2025 or a foundational concept** critical for mastering the subject.  \n- Topics should reflect **real-world applications, emerging technologies, or paradigm shifts** cited in industry reports.\nExclude the subject titles from your response - respond only with the raw list of topics",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        208,
+        0
+      ],
+      "id": "f54e7ac9-f1a5-4195-a428-8d99ddc9cb49",
+      "name": "Topic Generator"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "[\"topic1\", \"topic2\", \"topic3\"]"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        352,
+        208
+      ],
+      "id": "e7a9fef8-aae5-4fcb-9dbf-b82832309fd5",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        304
+      ],
+      "id": "dc44deaf-bd3b-4015-8013-0f1fec3b1b9e",
+      "name": "DeepSeek Chat Model1",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "vzmoQjzGMXE46rw1",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"width\": {\n\t\t\t\"type\": \"number\"\n\t\t},\n       \"height\": {\n         \"type\": \"number\"\n       },\n\t\t\"positivePrompt\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n        \"negativePrompt\": {\n            \"type\": \"string\"\n        }\n\t}\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1744,
+        304
+      ],
+      "id": "42ebdcd2-d679-4d58-a9c4-f4afe3194bbb",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst metaphors = [\n  \"floating geometric mesh\",\n  \"neural network grid\",\n  \"cybernetic circuit landscape\",\n  \"quantum particle field\", \n  \"security shield matrix\"\n]\n\nfor (const item of $input.all()) {\n  const index = Math.floor(Math.random() * metaphors.length);\n  item.json.metaphor = metaphors[index];\n}\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1392,
+        -48
+      ],
+      "id": "aa8fcfe2-76e7-4d47-a82a-34b47f60c104",
+      "name": "Create Image metaphor"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        768,
+        0
+      ],
+      "id": "af9ffc36-1a6c-4186-b797-2abe0c226d14",
+      "name": "Loop Over Topics"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create a positive and negative prompt to generate a professional digital illustration of {{ $json['output'] }} concept using Runware.ai. Sleek modern tech style, vibrant but professional color palette with electric blues, quantum purples, and holographic accents. Composition features:\n\n1. **Core Metaphor**: {{ $json['metaphor'] }}\n\n2. **Key Elements**:\n   - Abstract representations of {{ $json['output'] }} components as glowing 3D structures\n   - Dynamic light trails showing data flow/connections\n   - Transparent layers suggesting architectural depth\n   - Subtle binary code or microchip patterns in background\n\n3. **Style Guide**:\n   - Photorealistic materials with glass/metal textures\n   - Isometric perspective or futuristic fisheye view\n   - Cinematic lighting with volumetric rays\n   - Cyberpunk aesthetic meets corporate minimalism\n   - Negative space for text overlay\n\n4. **Exclusions**: No text, no human figures\nRespond with the prompt only as part of a JSON object with the format: { width: number, height: number, positivePrompt: string, negativePrompt: string }",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1600,
+        96
+      ],
+      "id": "b4c4305e-f18e-4b1a-9930-dfd9257a5ad0",
+      "name": "Generate Image prompt"
+    },
+    {
+      "parameters": {
+        "jsCode": "const { randomUUID } = require(\"node:crypto\");\n\nconst item = $input.first().json;\n\nconst runwareTasks = [];\nconst taskIds = [];\nconst imageSizes = [\n  { name: \"banner\", width: 1216, height: 640 },\n  { name: \"card\", width: 832, height: 576 },\n  { name: \"splash\", width: 1216, height: 832 },\n  { name: \"background\", width: 1920, height: 1088 }\n];\nconst positivePrompt = item.output.positivePrompt;\nconst negativePrompt = item.output.negativePrompt;\n\nfor (const imageType of imageSizes) {\n  const taskUUID = randomUUID();\n  taskIds.push({ name: imageType.name, id: taskUUID });\n  const body = {\n    taskType: \"imageInference\",\n    taskUUID,\n    outputType: \"URL\",\n    outputFormat: \"PNG\",\n    positivePrompt,\n    negativePrompt,\n    height: imageType.height,\n    width: imageType.width,\n    model: \"rundiffusion:133005@348913\",\n    steps: 30,\n    numberResults: 3\n  };\n  runwareTasks.push(body);\n}\n$input.first().json.output = runwareTasks;\n$input.first().json.ids = taskIds;\n$input.first().json.concept = $(\"Create Image metaphor\").first().json;\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1968,
+        -48
+      ],
+      "id": "2a53bf27-cfd4-4a19-9dc6-94dd4e2c8a7a",
+      "name": "Runware API Payload"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.runware.ai/v1",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2256,
+        96
+      ],
+      "id": "a97e2170-6059-4284-b77c-ccbd1deae605",
+      "name": "Runware API generation",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "qHivi5xEAGVKZF2P",
+          "name": "Runware Image API 1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "//filename indicates topic, metaphor, size\nconst filename = $(\"Create Image metaphor\").first().json.output + '-' + $(\"Create Image metaphor\").first().json.metaphor + '-';\nconst taskId = $input.first().json.taskUUID;\nconst size = $(\"Runware API Payload\").first().json.ids.filter((id) => id.id === taskId)[0].name;\n$input.first().json.filename = filename + size;\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3712,
+        192
+      ],
+      "id": "331389df-f4bf-40db-b9e0-301ca6dfdc98",
+      "name": "Create Filename"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.imageURL }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3504,
+        192
+      ],
+      "id": "0fc26656-0ddc-4072-b44f-a5c946f12ffb",
+      "name": "Retrieve Image data"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2880,
+        96
+      ],
+      "id": "d63e9ab7-a068-44e7-857d-6467efd41f72",
+      "name": "Loop Over Generated Images"
+    },
+    {
+      "parameters": {
+        "operation": "write",
+        "fileName": "={{ '/home/images/' + $json.filename + '.png' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        3888,
+        288
+      ],
+      "id": "44d4aba0-0563-476b-a639-4eef40ce06e4",
+      "name": "Save Image",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "imgsource",
+        "include": "specifiedFields",
+        "fieldsToInclude": "output, metaphor",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        3664,
+        -80
+      ],
+      "id": "378005f7-7a6a-49bb-ae0d-729e2d30eeb3",
+      "name": "Aggregate topics and metaphors"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        560,
+        0
+      ],
+      "id": "f95b7d7b-ffda-4893-843c-4bad94b58187",
+      "name": "Split Topics"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        2464,
+        96
+      ],
+      "id": "020b4255-9334-4d4b-a0e0-25e42c2635bc",
+      "name": "Split Generated Images"
+    },
+    {
+      "parameters": {
+        "fromEmail": "techimages@n8n.me",
+        "toEmail": "derek@fjellworks.dev",
+        "subject": "New Image Topics Generated",
+        "emailFormat": "text",
+        "text": "={{ $('Aggregate topics and metaphors').first().json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        4304,
+        -64
+      ],
+      "id": "d48e52ca-f438-4949-8a42-16c0e4ab8226",
+      "name": "Email Me",
+      "webhookId": "6ea83d0a-9905-4c03-a9bf-e4b82b7a708c",
+      "credentials": {
+        "smtp": {
+          "id": "ca9YvboebvAWqW5F",
+          "name": "mailrelay"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ff0321f6-1c1c-40c9-9bc8-056108776337",
+              "name": "taskUUID",
+              "value": "={{ $('Split Generated Images').item.json.taskUUID }}",
+              "type": "string"
+            },
+            {
+              "id": "071508c3-144f-4fc4-a820-6a90980860d6",
+              "name": "imageURL",
+              "value": "={{ $('Split Generated Images').item.json.imageURL }}",
+              "type": "string"
+            },
+            {
+              "id": "dd456576-b338-406f-8ac7-466b1f480160",
+              "name": "data",
+              "value": "={{ $('Runware API generation').item.json.data }}",
+              "type": "array"
+            },
+            {
+              "id": "a1a2d722-fb75-4caf-99a8-61bd66e07323",
+              "name": "output",
+              "value": "={{ $('Runware API Payload').item.json.output }}",
+              "type": "array"
+            },
+            {
+              "id": "60926b8a-4e35-4214-9b96-e061ff98a232",
+              "name": "output",
+              "value": "={{ $('Generate Image prompt').item.json.output }}",
+              "type": "object"
+            },
+            {
+              "id": "54e83508-3f20-4951-82c0-fdb5aeae2c08",
+              "name": "metaphor",
+              "value": "={{ $('Create Image metaphor').item.json.metaphor }}",
+              "type": "string"
+            },
+            {
+              "id": "5017cbd1-2290-4501-a861-9c3ee889a85b",
+              "name": "output",
+              "value": "={{ $('Split Topics').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "e8a9268f-c1a6-43a7-be8e-0fba4cc4817d",
+              "name": "output",
+              "value": "={{ $('Topic Generator').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        4096,
+        288
+      ],
+      "id": "de721fad-a380-4f6c-b6fd-7883f8b7aaa0",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2003cd2-3d8f-487f-9317-6be6c55cb19f",
+              "name": "output",
+              "value": "={{ $('Create Image metaphor').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "19ad6a0d-6db5-4240-9080-40bd05d23eca",
+              "name": "metaphor",
+              "value": "={{ $('Create Image metaphor').item.json.metaphor }}",
+              "type": "string"
+            },
+            {
+              "id": "87928292-f015-4bc9-8040-d4171638139e",
+              "name": "output",
+              "value": "={{ $('Split Topics').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "29145020-ef5d-4d64-9bee-b2c636cc8a9a",
+              "name": "output",
+              "value": "={{ $('Topic Generator').item.json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3088,
+        0
+      ],
+      "id": "1781d4bc-1ad3-4965-8fd0-dbee910d13ae",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Topic Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Topic Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Topic Generator": {
+      "main": [
+        [
+          {
+            "node": "Split Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Topic Generator",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Image prompt",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Generate Image prompt",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Image metaphor": {
+      "main": [
+        [
+          {
+            "node": "Generate Image prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Topics": {
+      "main": [
+        [
+          {
+            "node": "Aggregate topics and metaphors",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Image metaphor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image prompt": {
+      "main": [
+        [
+          {
+            "node": "Runware API Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Runware API Payload": {
+      "main": [
+        [
+          {
+            "node": "Runware API generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Runware API generation": {
+      "main": [
+        [
+          {
+            "node": "Split Generated Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Filename": {
+      "main": [
+        [
+          {
+            "node": "Save Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retrieve Image data": {
+      "main": [
+        [
+          {
+            "node": "Create Filename",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Generated Images": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Retrieve Image data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Image": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate topics and metaphors": {
+      "main": [
+        [
+          {
+            "node": "Email Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Topics": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Generated Images": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Generated Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Me": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Generated Images",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Topics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fc0dd720-5f07-4595-91ae-7e03a08b9fbc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a772c2a5e6d2026c3989736fcda24214848f5b90f89411ac194072e994cab1a9"
+  },
+  "id": "TLSwNOTiOK3Iksdy",
+  "tags": []
+}
